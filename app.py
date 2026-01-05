@@ -1,8 +1,7 @@
 import streamlit as st
 from PIL import Image, ImageDraw, ImageFont
-from transformers import pipeline
 import textwrap
-import os
+import random
 
 # -------------------------------
 # PAGE CONFIG
@@ -13,20 +12,7 @@ st.set_page_config(
 )
 
 st.title("🛍️ AIGen Retail Creative Optimizer")
-st.write("AI-powered tool to generate retail ad creatives automatically")
-
-# -------------------------------
-# LOAD AI MODEL (TEXT GENERATION)
-# -------------------------------
-@st.cache_resource
-def load_text_model():
-    return pipeline(
-        "text-generation",
-        model="gpt2",
-        max_length=80
-    )
-
-text_generator = load_text_model()
+st.write("AI-powered tool to automatically generate retail ad creatives")
 
 # -------------------------------
 # SIDEBAR INPUTS
@@ -39,16 +25,11 @@ platform = st.sidebar.selectbox(
 )
 
 product_name = st.sidebar.text_input("Product Name", "Wireless Earbuds")
+
 product_desc = st.sidebar.text_area(
     "Product Description",
     "High-quality wireless earbuds with noise cancellation and long battery life."
 )
-
-cta_options = {
-    "Instagram": "Shop Now",
-    "Amazon Ads": "Buy Now",
-    "Google Ads": "Learn More"
-}
 
 uploaded_image = st.sidebar.file_uploader(
     "Upload Product Image",
@@ -58,70 +39,83 @@ uploaded_image = st.sidebar.file_uploader(
 generate_btn = st.sidebar.button("🚀 Generate Creatives")
 
 # -------------------------------
-# HELPER FUNCTIONS
+# COPY GENERATION (AI LOGIC)
 # -------------------------------
 def generate_ad_copy(product_name, product_desc, platform):
-    prompt = f"""
-    Create a catchy ad headline and caption for {product_name}.
-    Description: {product_desc}
-    Platform: {platform}
-    """
+    headlines = [
+        f"Experience the Power of {product_name}",
+        f"Upgrade Your Life with {product_name}",
+        f"{product_name} That Redefines Performance",
+        f"Smarter Choice for Everyday Use"
+    ]
 
-    result = text_generator(prompt, num_return_sequences=1)[0]["generated_text"]
+    captions = [
+        f"{product_desc} Designed to deliver premium quality and unmatched comfort.",
+        f"Discover why {product_name} is the perfect choice for modern users.",
+        f"Engineered for performance, style, and reliability."
+    ]
 
-    lines = result.split(".")
-    headline = lines[0][:50]
-    caption = ". ".join(lines[1:3])
+    ctas = {
+        "Instagram": "Shop Now",
+        "Amazon Ads": "Buy Now",
+        "Google Ads": "Learn More"
+    }
 
-    return headline.strip(), caption.strip(), cta_options[platform]
+    return (
+        random.choice(headlines),
+        random.choice(captions),
+        ctas[platform]
+    )
 
-
+# -------------------------------
+# IMAGE GENERATION
+# -------------------------------
 def create_ad_image(base_image, headline, cta, size):
     img = base_image.resize(size)
     draw = ImageDraw.Draw(img)
 
     try:
-        font_title = ImageFont.truetype("arial.ttf", 36)
-        font_cta = ImageFont.truetype("arial.ttf", 28)
+        title_font = ImageFont.truetype("arial.ttf", 36)
+        cta_font = ImageFont.truetype("arial.ttf", 26)
     except:
-        font_title = ImageFont.load_default()
-        font_cta = ImageFont.load_default()
+        title_font = ImageFont.load_default()
+        cta_font = ImageFont.load_default()
 
-    wrapped_headline = textwrap.fill(headline, width=20)
+    wrapped_text = textwrap.fill(headline, width=20)
 
+    # Overlay
     draw.rectangle(
         [(0, img.height - 180), (img.width, img.height)],
-        fill=(0, 0, 0, 180)
+        fill=(0, 0, 0)
     )
 
     draw.text(
         (20, img.height - 160),
-        wrapped_headline,
+        wrapped_text,
         fill="white",
-        font=font_title
+        font=title_font
     )
 
+    # CTA Button
     draw.rectangle(
         [(20, img.height - 60), (200, img.height - 20)],
         fill=(255, 165, 0)
     )
 
     draw.text(
-        (40, img.height - 55),
+        (45, img.height - 55),
         cta,
         fill="black",
-        font=font_cta
+        font=cta_font
     )
 
     return img
 
 # -------------------------------
-# MAIN LOGIC
+# MAIN FLOW
 # -------------------------------
 if generate_btn and uploaded_image:
     base_image = Image.open(uploaded_image).convert("RGB")
-
-    st.subheader("📢 Generated Ad Copy")
 
     headline, caption, cta = generate_ad_copy(
         product_name,
@@ -129,10 +123,10 @@ if generate_btn and uploaded_image:
         platform
     )
 
-    col1, col2 = st.columns(2)
-    col1.metric("Headline", headline)
-    col2.metric("CTA", cta)
-    st.write("**Caption:**", caption)
+    st.subheader("📢 Generated Ad Copy")
+    st.markdown(f"**Headline:** {headline}")
+    st.markdown(f"**Caption:** {caption}")
+    st.markdown(f"**CTA:** {cta}")
 
     st.subheader("🎨 Generated Ad Creatives")
 
@@ -149,7 +143,6 @@ if generate_btn and uploaded_image:
             cta,
             size
         )
-
         st.image(
             ad_image,
             caption=f"{platform} Creative {size[0]}x{size[1]}"
@@ -157,4 +150,5 @@ if generate_btn and uploaded_image:
 
 else:
     st.info("⬅ Upload a product image and click **Generate Creatives**")
+
 
