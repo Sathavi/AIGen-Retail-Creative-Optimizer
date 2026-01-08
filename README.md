@@ -52,10 +52,3 @@ The system takes product images, product descriptions, and basic brand guideline
 
 - **Demo Video:**  
   https://www.youtube.com/watch?v=osm9gPDLJJE
-
----
-
-## Setup Instructions
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/Sathavi/AIGen-Retail-Creative-Optimizer.git
