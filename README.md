@@ -51,7 +51,7 @@ The system takes product images, product descriptions, and basic brand guideline
   https://aigen-retail-creative-optimizer-ib99xi4jles8aav5sq625e.streamlit.app/
 
 - **Demo Video:**  
-  https://drive.google.com/file/d/1WfKV2BVsukF0-2jS3qoCYXzUgOUer0Ex/view](https://www.youtube.com/watch?v=osm9gPDLJJE)
+  https://www.youtube.com/watch?v=osm9gPDLJJE
 
 ---
 
